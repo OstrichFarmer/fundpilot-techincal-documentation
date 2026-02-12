@@ -1,360 +1,979 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FundPilot | Technical Implementation Deep-Dive</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FundPilot | Technical Documentation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
     <style>
-        :root {
-            --primary: #0B1C2D;
-            --accent: #1DBF73;
-            --accent-dark: #17995C;
-            --background: #F5F7FA;
-            --surface: #FFFFFF;
-            --text-primary: #111827;
-            --text-secondary: #6B7280;
-            --divider: #E5E7EB;
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --code-bg: #1e293b;
-        }
-
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --primary: #58A6FF;
-                --background: #0D1117;
-                --surface: #161B22;
-                --text-primary: #F0F6FC;
-                --text-secondary: #8B949E;
-                --divider: #30363D;
-            }
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, sans-serif;
-            line-height: 1.6;
-            color: var(--text-primary);
-            background-color: var(--background);
-            padding: 0;
-        }
-
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 60px 20px;
-        }
-
-        header {
-            text-align: left;
-            margin-bottom: 80px;
-            padding-bottom: 40px;
-            border-bottom: 2px solid var(--divider);
-        }
-
-        .logo {
-            width: 80px;
-            height: 80px;
-            background-color: #0B1C2D;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 32px;
-            color: #FFFFFF;
-            box-shadow: var(--shadow);
-        }
-
-        .logo svg {
-            width: 44px;
-            height: 44px;
-        }
-
-        h1 {
-            font-size: 3rem;
-            font-weight: 800;
-            color: var(--text-primary);
-            margin-bottom: 16px;
-            letter-spacing: -0.04em;
-        }
-
-        p.subtitle {
-            font-size: 1.25rem;
-            color: var(--text-secondary);
-            font-weight: 400;
-            max-width: 700px;
-        }
-
-        section {
-            background: var(--surface);
-            padding: 56px;
-            border-radius: 32px;
-            margin-bottom: 40px;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--divider);
-        }
-
-        h2 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-bottom: 32px;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            color: var(--text-primary);
-        }
-
-        h2::before {
-            content: '';
-            display: block;
-            width: 6px;
-            height: 32px;
-            background: var(--accent);
-            border-radius: 3px;
-        }
-
-        h3 {
-            font-size: 1.3rem;
-            font-weight: 600;
-            margin: 40px 0 20px;
-            color: var(--text-primary);
-            border-left: 3px solid var(--divider);
-            padding-left: 16px;
-        }
-
-        p {
-            margin-bottom: 20px;
-            color: var(--text-secondary);
-            font-size: 1.05rem;
-        }
-
-        ul {
-            margin-bottom: 28px;
-            padding-left: 28px;
-            color: var(--text-secondary);
-        }
-
-        li {
-            margin-bottom: 14px;
-        }
-
-        pre {
-            background: var(--code-bg);
-            color: #e2e8f0;
-            padding: 24px;
-            border-radius: 16px;
-            overflow-x: auto;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.9rem;
-            margin: 24px 0;
-            border: 1px solid #334155;
-        }
-
-        code {
-            font-family: 'JetBrains Mono', monospace;
-            background: rgba(29, 191, 115, 0.12);
-            color: var(--accent-dark);
-            padding: 3px 8px;
-            border-radius: 6px;
-            font-size: 0.92em;
-            font-weight: 500;
-        }
-
-        .highlight-box {
-            background: rgba(29, 191, 115, 0.05);
-            border-radius: 16px;
-            padding: 24px;
-            border: 1px solid rgba(29, 191, 115, 0.2);
-            margin: 24px 0;
-        }
-
-        .tech-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 28px;
-            margin-top: 40px;
-        }
-
-        .tech-card {
-            padding: 32px;
-            background: var(--background);
-            border-radius: 24px;
-            border: 1px solid var(--divider);
-        }
-
-        .tech-card h4 {
-            margin-bottom: 14px;
-            color: var(--text-primary);
-            font-size: 1.15rem;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 6px 14px;
-            border-radius: 30px;
-            font-size: 0.75rem;
-            font-weight: 800;
-            background: var(--accent);
-            color: #FFFFFF;
-            margin-bottom: 20px;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-        }
-
-        footer {
-            text-align: center;
-            padding: 80px 0;
-            color: var(--text-secondary);
-            font-size: 0.95rem;
-        }
-
-        .inner-nav {
-            display: flex;
-            gap: 24px;
-            margin-top: 32px;
-        }
-
-        .inner-nav a {
-            color: var(--accent-dark);
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-
-        .inner-nav a:hover {
-            text-decoration: underline;
-        }
-
-        @media (max-width: 600px) {
-            section {
-                padding: 40px 24px;
-            }
-            h1 {
-                font-size: 2.2rem;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <header>
-            <div class="logo">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
-                    <polyline points="17 6 23 6 23 12"></polyline>
-                </svg>
-            </div>
-            <h1>Technical Implementation</h1>
-            <p class="subtitle">Detailed engineering breakdown of FundPilot's subscription engine and market data orchestration.</p>
-            <nav class="inner-nav">
-                <a href="#revenuecat">RevenueCat Sync</a>
-                <a href="#twelvedata">Twelve Data Batching</a>
-                <a href="#ai-risk">AI Risk Logic</a>
-            </nav>
-        </header>
-
-        <!-- REVENUE CAT SECTION -->
-        <section id="revenuecat">
-            <h2>RevenueCat & Entitlement Synchronization</h2>
-            <p>Managing premium access requires a high-fidelity sync between the mobile client (Source of Truth for Purchase) and our Go Backend (Source of Truth for Background Jobs).</p>
-            
-            <h3>1. The Flutter Entitlements Flow</h3>
-            <p>We utilize a centralized <code>SubscriptionNotifier</code> (StateNotifier) to manage the purchase lifecycle. The flow follows these strict steps:</p>
-            <pre>
-// lib/features/subscription/presentation/providers/subscription_provider.dart
-
-Future<bool> purchasePackage(Package package) async {
-  state = true; // Set loading
-  final result = await repository.purchasePackage(package);
-  
-  return result.fold(
-    (failure) => false,
-    (success) {
-      if (success) {
-        // Step 2: Trigger backend sync immediately
-        ref.read(authProvider.notifier).updateUserPremiumStatus(true);
+      :root {
+        --primary: #0b1c2d;
+        --accent: #1dbf73;
+        --accent-dark: #17995c;
+        --bg: #f5f7fa;
+        --surface: #ffffff;
+        --text: #111827;
+        --text-sec: #6b7280;
+        --border: #e5e7eb;
+        --shadow:
+          0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --code-bg: #1e293b;
       }
-      return success;
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --primary: #58a6ff;
+          --bg: #0d1117;
+          --surface: #161b22;
+          --text: #f0f6fc;
+          --text-sec: #8b949e;
+          --border: #30363d;
+        }
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family:
+          "Inter",
+          -apple-system,
+          sans-serif;
+        line-height: 1.7;
+        color: var(--text);
+        background: var(--bg);
+      }
+      .wrap {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 60px 24px;
+      }
+
+      /* HEADER */
+      header {
+        margin-bottom: 72px;
+        padding-bottom: 48px;
+        border-bottom: 2px solid var(--border);
+      }
+      .logo {
+        width: 80px;
+        height: 80px;
+        background: #0b1c2d;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 32px;
+        box-shadow: var(--shadow);
+      }
+      .logo svg {
+        width: 44px;
+        height: 44px;
+        color: #fff;
+      }
+      h1 {
+        font-size: 3rem;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        margin-bottom: 16px;
+        color: var(--text);
+      }
+      .subtitle {
+        font-size: 1.2rem;
+        color: var(--text-sec);
+        max-width: 720px;
+      }
+
+      /* TABLE OF CONTENTS */
+      .toc {
+        margin-top: 36px;
+      }
+      .toc a {
+        display: inline-block;
+        margin-right: 20px;
+        margin-bottom: 8px;
+        color: var(--accent-dark);
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.92rem;
+      }
+      .toc a:hover {
+        text-decoration: underline;
+      }
+
+      /* SECTIONS */
+      section {
+        background: var(--surface);
+        padding: 56px;
+        border-radius: 28px;
+        margin-bottom: 40px;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border);
+      }
+      h2 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 28px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        color: var(--text);
+      }
+      h2::before {
+        content: "";
+        display: block;
+        width: 5px;
+        height: 30px;
+        background: var(--accent);
+        border-radius: 3px;
+      }
+      h3 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin: 36px 0 16px;
+        color: var(--text);
+        border-left: 3px solid var(--border);
+        padding-left: 16px;
+      }
+      p {
+        margin-bottom: 18px;
+        color: var(--text-sec);
+        font-size: 1.05rem;
+      }
+      ul,
+      ol {
+        margin-bottom: 24px;
+        padding-left: 28px;
+        color: var(--text-sec);
+      }
+      li {
+        margin-bottom: 12px;
+      }
+
+      /* INLINE CODE */
+      code {
+        font-family: "JetBrains Mono", monospace;
+        background: rgba(29, 191, 115, 0.12);
+        color: var(--accent-dark);
+        padding: 2px 7px;
+        border-radius: 6px;
+        font-size: 0.9em;
+        font-weight: 500;
+      }
+
+      /* CODE BLOCKS */
+      pre {
+        background: var(--code-bg);
+        color: #e2e8f0;
+        padding: 28px;
+        border-radius: 16px;
+        overflow-x: auto;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.88rem;
+        margin: 24px 0;
+        border: 1px solid #334155;
+        line-height: 1.6;
+      }
+      pre .comment {
+        color: #94a3b8;
+      }
+      pre .keyword {
+        color: #c084fc;
+      }
+      pre .string {
+        color: #86efac;
+      }
+
+      /* TECH GRID */
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 24px;
+        margin-top: 32px;
+      }
+      .card {
+        padding: 28px;
+        background: var(--bg);
+        border-radius: 20px;
+        border: 1px solid var(--border);
+        transition: transform 0.2s;
+      }
+      .card:hover {
+        transform: translateY(-3px);
+      }
+      .card h4 {
+        margin-bottom: 12px;
+        color: var(--text);
+        font-size: 1.1rem;
+        font-weight: 600;
+      }
+
+      /* BADGE */
+      .badge {
+        display: inline-block;
+        padding: 5px 14px;
+        border-radius: 30px;
+        font-size: 0.72rem;
+        font-weight: 800;
+        background: var(--accent);
+        color: #fff;
+        margin-bottom: 16px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+
+      /* HIGHLIGHT BOX */
+      .note {
+        background: rgba(29, 191, 115, 0.06);
+        border-radius: 16px;
+        padding: 24px;
+        border: 1px solid rgba(29, 191, 115, 0.2);
+        margin: 24px 0;
+      }
+      .note strong {
+        color: var(--text);
+      }
+
+      /* DARK FLOW BOX */
+      .flow-box {
+        background: #0b1c2d;
+        border-radius: 20px;
+        padding: 32px;
+        color: #fff;
+        margin: 28px 0;
+        font-size: 0.95rem;
+      }
+      .flow-row {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 14px;
+      }
+      .flow-row:last-child {
+        margin-bottom: 0;
+      }
+      .arrow {
+        color: var(--accent);
+        font-weight: 800;
+        font-size: 1.2rem;
+      }
+
+      /* FOOTER */
+      footer {
+        text-align: center;
+        padding: 80px 0;
+        color: var(--text-sec);
+        font-size: 0.9rem;
+        border-top: 1px solid var(--border);
+      }
+
+      @media (max-width: 640px) {
+        section {
+          padding: 36px 24px;
+        }
+        h1 {
+          font-size: 2.2rem;
+        }
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <!-- HEADER -->
+      <header>
+        <div class="logo">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+            <polyline points="17 6 23 6 23 12"></polyline>
+          </svg>
+        </div>
+        <h1>Technical Documentation</h1>
+        <p class="subtitle">
+          A comprehensive look at every layer of FundPilot — from the Flutter UI
+          and state management, through the Go backend and database, to the
+          RevenueCat subscription engine and Twelve Data market integration.
+        </p>
+        <nav class="toc">
+          <a href="#overview">Overview</a>
+          <a href="#frontend">Frontend</a>
+          <a href="#backend">Backend</a>
+          <a href="#database">Database</a>
+          <a href="#twelvedata">Twelve Data</a>
+          <a href="#revenuecat">RevenueCat</a>
+          <a href="#notifications">Push Notifications</a>
+          <a href="#ai">AI Engine</a>
+        </nav>
+      </header>
+
+      <!-- 1. OVERVIEW -->
+      <section id="overview">
+        <h2>Project Overview & Tech Stack</h2>
+        <p>
+          FundPilot is a premium investment portfolio tracker that combines
+          real-time market data with AI-driven insights. The application is
+          built as a cross-platform mobile app backed by a high-performance
+          server and a suite of third-party integrations.
+        </p>
+
+        <div class="grid">
+          <div class="card">
+            <span class="badge">Mobile</span>
+            <h4>Flutter 3.x (Dart)</h4>
+            <p>
+              Cross-platform UI framework used to build a single codebase that
+              ships to both iOS and Android. Chosen for its rich widget library,
+              60fps rendering, and tight integration with native platform
+              features like push notifications.
+            </p>
+          </div>
+          <div class="card">
+            <span class="badge">State Management</span>
+            <h4>Riverpod</h4>
+            <p>
+              Replaces vanilla Provider with compile-safe, testable providers.
+              Used across the entire app for auth state, portfolio data,
+              subscription status, and real-time price refresh coordination.
+            </p>
+          </div>
+          <div class="card">
+            <span class="badge">Backend</span>
+            <h4>Go + Fiber</h4>
+            <p>
+              A statically typed, high-concurrency language paired with the
+              Fiber web framework. Handles REST APIs, background tickers, and
+              orchestrates all server-side logic in a single deployable binary.
+            </p>
+          </div>
+          <div class="card">
+            <span class="badge">Database</span>
+            <h4>PostgreSQL + GORM</h4>
+            <p>
+              A production-grade relational database accessed through Go's GORM
+              ORM. Manages users, assets, prices, notifications, devices, and
+              subscription states with automated schema migrations.
+            </p>
+          </div>
+          <div class="card">
+            <span class="badge">Market Data</span>
+            <h4>Twelve Data API</h4>
+            <p>
+              Real-time and historical pricing for stocks, cryptocurrencies, and
+              forex pairs. Integrated through a custom batching engine that
+              respects the Grow Plan's 55-credit/minute rate limit.
+            </p>
+          </div>
+          <div class="card">
+            <span class="badge">Subscriptions</span>
+            <h4>RevenueCat</h4>
+            <p>
+              Manages in-app purchases across Apple App Store and Google Play.
+              Handles receipt validation, entitlement granting, and provides a
+              single source of truth for the user's premium status on the
+              client.
+            </p>
+          </div>
+          <div class="card">
+            <span class="badge">Intelligence</span>
+            <h4>Google Gemini Pro</h4>
+            <p>
+              Large language model accessed through the Go SDK. Generates
+              contextual risk analysis narratives, tactical loss alerts, and
+              AI-written daily wealth summaries for premium users.
+            </p>
+          </div>
+          <div class="card">
+            <span class="badge">Notifications</span>
+            <h4>Firebase Cloud Messaging</h4>
+            <p>
+              Push notification delivery across iOS and Android. The backend
+              uses the Firebase Admin SDK to send targeted messages to
+              registered user devices.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. FRONTEND -->
+      <section id="frontend">
+        <h2>Frontend Architecture (Flutter)</h2>
+        <p>
+          The Flutter application follows a feature-first directory structure.
+          Each feature (auth, assets, portfolio, analytics, notifications,
+          subscription) is self-contained with its own data layer, domain
+          entities, and presentation layer.
+        </p>
+
+        <h3>Project Structure</h3>
+        <pre>
+lib/
+├── core/
+│   ├── api/           <span class="comment">// Dio-based API client, endpoints, error handling</span>
+│   ├── config/        <span class="comment">// RevenueCat keys, environment config</span>
+│   ├── notifications/ <span class="comment">// PushNotificationService (FCM)</span>
+│   ├── router/        <span class="comment">// GoRouter configuration</span>
+│   ├── theme/         <span class="comment">// AppTheme, AppColors, AppTypography</span>
+│   └── widgets/       <span class="comment">// Shared widgets (LoadingSkeleton, etc.)</span>
+├── features/
+│   ├── auth/          <span class="comment">// Login, Register, Verify Email, Forgot/Reset Password</span>
+│   ├── assets/        <span class="comment">// Asset List, Add/Edit Asset, Asset Detail</span>
+│   ├── portfolio/     <span class="comment">// Dashboard, Portfolio Value Card</span>
+│   ├── analytics/     <span class="comment">// Charts, Allocation Breakdown</span>
+│   ├── notifications/ <span class="comment">// Notification List, Premium Paywall</span>
+│   └── subscription/  <span class="comment">// Paywall, Risk Insights, RevenueCat integration</span>
+└── main.dart          <span class="comment">// App entry: Firebase, RevenueCat, Riverpod init</span></pre>
+
+        <h3>State Management with Riverpod</h3>
+        <p>
+          Riverpod providers are the backbone of the client. Every piece of
+          reactive state — from user authentication to live price tickers — is
+          managed through typed providers. This eliminates manual state disposal
+          and ensures the UI always reflects the latest data.
+        </p>
+        <pre>
+<span class="comment">// Example: Auth state drives the entire app navigation</span>
+<span class="keyword">final</span> authProvider = StateNotifierProvider&lt;AuthNotifier, AuthState&gt;(...);
+
+<span class="comment">// Real-time portfolio data, auto-refreshes from backend</span>
+<span class="keyword">final</span> portfolioProvider = FutureProvider&lt;Portfolio&gt;(...);
+
+<span class="comment">// Subscription state, drives premium UI gating</span>
+<span class="keyword">final</span> subscriptionLoadingProvider = NotifierProvider&lt;SubscriptionNotifier, bool&gt;(...);</pre>
+
+        <h3>Routing with GoRouter</h3>
+        <p>
+          Navigation is handled by <code>GoRouter</code> with a
+          <code>ShellRoute</code> pattern. The shell provides a persistent
+          bottom navigation bar with four tabs (Dashboard, Assets, Analytics,
+          Insights), while full-screen routes like Login, Subscription, and
+          Notifications are rendered outside the shell.
+        </p>
+        <pre>
+<span class="keyword">final</span> appRouter = GoRouter(
+  initialLocation: <span class="string">'/'</span>,
+  routes: [
+    GoRoute(path: <span class="string">'/'</span>,       builder: ... <span class="comment">// SplashScreen</span>),
+    GoRoute(path: <span class="string">'/login'</span>,  builder: ... <span class="comment">// LoginScreen</span>),
+
+    <span class="comment">// Main app shell with bottom navigation</span>
+    ShellRoute(
+      builder: (context, state, child) => _MainShell(child: child),
+      routes: [
+        GoRoute(path: <span class="string">'/dashboard'</span>,     ...),
+        GoRoute(path: <span class="string">'/assets'</span>,         ...,
+          routes: [
+            GoRoute(path: <span class="string">'add'</span>,    ...),    <span class="comment">// /assets/add</span>
+            GoRoute(path: <span class="string">':id'</span>,    ...,     <span class="comment">// /assets/:id</span>
+              routes: [
+                GoRoute(path: <span class="string">'edit'</span>, ...), <span class="comment">// /assets/:id/edit</span>
+              ]),
+          ]),
+        GoRoute(path: <span class="string">'/analytics'</span>,      ...),
+        GoRoute(path: <span class="string">'/risk-insights'</span>,  ...),
+      ],
+    ),
+
+    <span class="comment">// Full-screen routes outside the shell</span>
+    GoRoute(path: <span class="string">'/subscription'</span>,   ...),
+    GoRoute(path: <span class="string">'/notifications'</span>,  ...),
+  ],
+);</pre>
+
+        <h3>Theming System</h3>
+        <p>
+          The app implements a complete dual-theme system through
+          <code>AppTheme</code>, <code>AppColors</code>, and
+          <code>AppTypography</code>. A
+          <code>themeModeProvider</code> (Riverpod) controls the current mode
+          (Light, Dark, or System), and the <code>main.dart</code> entry point
+          applies the correct theme and system UI chrome dynamically.
+        </p>
+
+        <h3>API Communication</h3>
+        <p>
+          All network requests flow through a centralized
+          <code>ApiClient</code> built on <code>Dio</code>. It handles JWT token
+          injection via interceptors, automatic error parsing into typed
+          <code>ApiException</code> objects, and base URL configuration from
+          environment variables loaded via <code>flutter_dotenv</code>.
+        </p>
+      </section>
+
+      <!-- 3. BACKEND -->
+      <section id="backend">
+        <h2>Backend Architecture (Go)</h2>
+        <p>
+          The Go backend is structured as a <strong>Modular Monolith</strong> —
+          a single deployable binary with cleanly separated internal packages.
+          This provides the simplicity of a monolith during development while
+          maintaining clear boundaries that could be extracted into
+          microservices if needed.
+        </p>
+
+        <h3>Module Structure</h3>
+        <pre>
+backend/
+├── cmd/server/main.go       <span class="comment">// Entry point: init DB, Firebase, Fiber, start tickers</span>
+└── internal/
+    ├── config/              <span class="comment">// Environment variable loading</span>
+    ├── database/            <span class="comment">// PostgreSQL connection, GORM models, migrations</span>
+    ├── middleware/           <span class="comment">// JWT auth middleware</span>
+    └── modules/
+        ├── auth/            <span class="comment">// Register, Login, Verify Email, Forgot Password</span>
+        ├── assets/          <span class="comment">// CRUD for user portfolio assets</span>
+        ├── portfolio/       <span class="comment">// Aggregated portfolio calculations</span>
+        ├── analytics/       <span class="comment">// Allocation breakdown, performance metrics</span>
+        ├── marketdata/      <span class="comment">// PriceUpdater, Twelve Data batching, search/quote</span>
+        ├── notifications/   <span class="comment">// Notification CRUD, FCM push delivery</span>
+        ├── subscription/    <span class="comment">// Premium status sync endpoint</span>
+        ├── risk/            <span class="comment">// Gemini AI integration, risk analysis handler</span>
+        └── email/           <span class="comment">// Resend SDK for transactional emails</span></pre>
+
+        <h3>Server Initialization</h3>
+        <p>
+          The <code>main.go</code> entry point orchestrates the entire boot
+          sequence in a specific order:
+        </p>
+        <ol>
+          <li>
+            <strong>Environment</strong>: Loads <code>.env</code> via
+            <code>godotenv</code> and parses into a typed
+            <code>Config</code> struct.
+          </li>
+          <li>
+            <strong>Database</strong>: Connects to PostgreSQL, runs GORM
+            <code>AutoMigrate()</code> to ensure all tables are up to date.
+          </li>
+          <li>
+            <strong>Firebase</strong>: Initializes the Admin SDK for FCM push
+            notification delivery.
+          </li>
+          <li>
+            <strong>Fiber App</strong>: Creates the HTTP server with CORS,
+            logging, and panic recovery middleware.
+          </li>
+          <li>
+            <strong>Route Registration</strong>: Public routes (auth) are
+            registered first, then protected routes behind JWT middleware.
+          </li>
+          <li>
+            <strong>Gemini Service</strong>: Initializes the AI client, shared
+            between the Risk handler and the PriceUpdater.
+          </li>
+          <li>
+            <strong>Background Tickers</strong>: Starts the
+            <code>PriceUpdater</code> goroutine which runs three independent
+            tickers.
+          </li>
+        </ol>
+
+        <h3>Background Processing (The Ticker Engine)</h3>
+        <p>
+          The <code>PriceUpdater</code> is the core background service. It
+          spawns a goroutine on startup that runs three concurrent tickers:
+        </p>
+
+        <div class="flow-box">
+          <div class="flow-row">
+            <span>⏱ Every 15 seconds</span> <span class="arrow">&rarr;</span>
+            <span>Refresh all market prices in batches</span>
+          </div>
+          <div class="flow-row">
+            <span>⏱ Every 1 hour</span> <span class="arrow">&rarr;</span>
+            <span>Check all premium user assets for &gt;2% losses</span>
+          </div>
+          <div class="flow-row">
+            <span>⏱ Every 1 minute</span> <span class="arrow">&rarr;</span>
+            <span>Check if 9:00 AM daily summary is due</span>
+          </div>
+        </div>
+
+        <pre>
+<span class="comment">// Three independent tickers running in a single goroutine</span>
+priceTicker := time.NewTicker(15 * time.Second)
+alertTicker := time.NewTicker(1 * time.Hour)
+dailyTicker := time.NewTicker(1 * time.Minute)
+
+<span class="keyword">for</span> {
+    <span class="keyword">select</span> {
+    <span class="keyword">case</span> &lt;-priceTicker.C:
+        p.updatePrices()       <span class="comment">// Batch fetch from Twelve Data</span>
+    <span class="keyword">case</span> &lt;-alertTicker.C:
+        p.checkLossAlerts()    <span class="comment">// AI-powered loss notifications</span>
+    <span class="keyword">case</span> &lt;-dailyTicker.C:
+        p.checkDailySchedule() <span class="comment">// 9 AM summary with idempotency</span>
     }
-  );
-}
-            </pre>
+}</pre>
+      </section>
 
-            <h3>2. Transaction Verification & Backend Mirroring</h3>
-            <p>When a purchase is completed, the mobile app hits our <code>POST /api/subscriptions/sync</code> endpoint. This ensures that features triggered from the server (like 9:00 AM AI Daily Summaries) know the user is premium without checking RevenueCat APIs on every job run.</p>
-            <ul>
-                <li><strong>Entitlement ID</strong>: We specifically check for the <code>premium</code> entitlement.</li>
-                <li><strong>GORM Integration</strong>: The backend updates the <code>users</code> table, setting <code>is_premium = true</code>. This column is indexed for rapid checks during notification tickers.</li>
-                <li><strong>Grace Period Management</strong>: RevenueCat webhooks (planned) or scheduled mobile-side checks handle subscription expirations to flip the database flag back to false.</li>
-            </ul>
-        </section>
+      <!-- 4. DATABASE -->
+      <section id="database">
+        <h2>Database Layer (PostgreSQL + GORM)</h2>
+        <p>
+          All persistent data is stored in a PostgreSQL instance. GORM handles
+          the object-relational mapping with automatic schema migrations on
+          server boot.
+        </p>
 
-        <!-- TWELVE DATA SECTION -->
-        <section id="twelvedata">
-            <h2>Twelve Data: High-Density Batching</h2>
-            <p>To provide real-time updates while respecting the **Twelve Data Grow Plan** (55 credits/min), we implemented a batching engine specialized for stock and crypto symbols.</p>
-            
-            <div class="highlight-box">
-                <strong>Rate Limit Strategy:</strong> We budget 40 credits per minute for automated background refreshes, leaving 15 credits reserved for user-initiated searches and real-time quotes in the detail view.
-            </div>
+        <h3>Core Models</h3>
+        <ul>
+          <li>
+            <strong>User</strong>: Authentication credentials, email
+            verification status, and the critical <code>is_premium</code> flag
+            synced from RevenueCat.
+          </li>
+          <li>
+            <strong>Asset</strong>: Belongs to a User. Stores the asset name,
+            type (<code>stock</code>, <code>crypto</code>, <code>forex</code>,
+            <code>fixed_income</code>, <code>cash</code>,
+            <code>realEstate</code>, <code>custom</code>), purchase price,
+            quantity, purchase date, symbol, and a JSON
+            <code>Metadata</code> field for interest rates and estimated values.
+          </li>
+          <li>
+            <strong>Price</strong>: A cached lookup table keyed by symbol.
+            Updated every 15 seconds by the background ticker. Stores the
+            current price, percent change, and last update timestamp.
+          </li>
+          <li>
+            <strong>Notification</strong>: Stores all in-app notifications with
+            title, body, type (<code>info</code>, <code>warning</code>,
+            <code>success</code>, <code>error</code>), and read status. Also
+            used for idempotency checks (e.g., preventing duplicate daily
+            reports).
+          </li>
+          <li>
+            <strong>Device</strong>: Belongs to a User. Stores the FCM token and
+            platform (<code>android</code>/<code>ios</code>) for push
+            notification delivery.
+          </li>
+        </ul>
 
-            <h3>1. Symbol Chunking Logic</h3>
-            <p>Instead of single-request API calls, the <code>PriceUpdater</code> in Go gathers all unique symbols across the entire database and processes them in batches of 10.</p>
-            <pre>
-// backend/internal/modules/marketdata/updater.go
+        <h3>Compound Interest Calculation</h3>
+        <p>
+          For fixed-income and cash assets, the backend calculates accrued value
+          using the compound interest formula directly in Go, supporting
+          multiple compounding frequencies:
+        </p>
+        <pre>
+<span class="comment">// A = P × (1 + r/n)^(n×t)</span>
+daysHeld := time.Since(asset.PurchaseDate).Hours() / 24.0
+t := daysHeld / 365.0
+currentValue := asset.PurchasePrice * math.Pow(1 + (rate/n), n*t)</pre>
+      </section>
 
+      <!-- 5. TWELVE DATA -->
+      <section id="twelvedata">
+        <h2>Twelve Data Integration</h2>
+        <p>
+          Twelve Data provides real-time quotes for stocks, crypto, and forex.
+          The integration is designed around the constraints of the
+          <strong>Grow Plan</strong> (55 API credits per minute), ensuring
+          reliable data without ever hitting a rate limit.
+        </p>
+
+        <h3>Credit Budgeting Strategy</h3>
+        <div class="note">
+          <strong>Budget Allocation:</strong> Of the 55 credits/minute,
+          <strong>40 are reserved for background price updates</strong> and
+          <strong>15 are reserved for user-initiated actions</strong> (asset
+          search, real-time quote on detail screen). This guarantees users never
+          experience a "rate limit" error during normal app usage.
+        </div>
+
+        <h3>Symbol Batching Engine</h3>
+        <p>
+          Instead of making individual API calls for each symbol, the
+          <code>PriceUpdater</code> collects all unique symbols across the
+          entire database and processes them in batches of 10. Each symbol in a
+          batch consumes 1 credit, so 4 batches per tick = 40 credits.
+        </p>
+        <pre>
+<span class="comment">// 1. Collect all unique symbols from the assets table</span>
+<span class="keyword">var</span> symbols []string
+database.DB.Model(&database.Asset{}).
+    Where(<span class="string">"symbol IS NOT NULL AND symbol != ''"</span>).
+    Distinct(<span class="string">"symbol"</span>).Pluck(<span class="string">"symbol"</span>, &symbols)
+
+<span class="comment">// 2. Process in batches of 10</span>
 batchSize := 10
-for i := 0; i < len(symbols); i += batchSize {
+<span class="keyword">for</span> i := 0; i &lt; len(symbols); i += batchSize {
     end := i + batchSize
-    if end > len(symbols) {
-        end = len(symbols)
-    }
+    <span class="keyword">if</span> end &gt; len(symbols) { end = len(symbols) }
     
     batch := symbols[i:end]
-    p.fetchPricesBatch(batch)
+    prices, err := p.fetchPricesBatch(batch)
+    <span class="comment">// ...</span>
+}</pre>
+
+        <h3>Response Parsing</h3>
+        <p>
+          Twelve Data returns a different JSON structure for single-symbol vs.
+          multi-symbol requests. Our parser uses a
+          <strong>dynamic decoder</strong> that detects the response shape at
+          runtime:
+        </p>
+        <ul>
+          <li>
+            <strong>Single symbol</strong>: Returns a flat JSON object with
+            price fields.
+          </li>
+          <li>
+            <strong>Multi symbol</strong>: Returns a nested map where each key
+            is a symbol.
+          </li>
+          <li>
+            <strong>Comma handling</strong>: Numeric strings like
+            <code>"1,234.50"</code> are automatically cleaned to
+            <code>1234.50</code> before parsing to <code>float64</code>.
+          </li>
+          <li>
+            <strong>Error isolation</strong>: If one symbol in a batch fails
+            (e.g., delisted), the other 9 symbols are still updated
+            successfully.
+          </li>
+        </ul>
+
+        <h3>Search & Quote Endpoints</h3>
+        <p>
+          User-facing search (<code>/api/market/search?q=AAPL</code>) and quote
+          (<code>/api/market/quote?symbol=AAPL</code>) endpoints hit Twelve Data
+          directly with no batching, consuming 1 credit each. These are
+          rate-limited against the reserved 15-credit budget through natural
+          user interaction patterns.
+        </p>
+      </section>
+
+      <!-- 6. REVENUECAT -->
+      <section id="revenuecat">
+        <h2>RevenueCat Implementation</h2>
+        <p>
+          RevenueCat is the single source of truth for purchase validation on
+          the client side. The implementation spans three layers: mobile
+          initialization, purchase flow, and backend synchronization.
+        </p>
+
+        <h3>1. SDK Initialization (<code>main.dart</code>)</h3>
+        <p>
+          RevenueCat is configured at app startup, before the widget tree is
+          built. The correct API key is selected based on the platform:
+        </p>
+        <pre>
+<span class="keyword">await</span> Purchases.setLogLevel(LogLevel.debug);
+PurchasesConfiguration? configuration;
+
+<span class="keyword">if</span> (Platform.isAndroid) {
+    configuration = PurchasesConfiguration(RevenueCatConfig.googleApiKey);
+} <span class="keyword">else if</span> (Platform.isIOS) {
+    configuration = PurchasesConfiguration(RevenueCatConfig.appleApiKey);
 }
-            </pre>
 
-            <h3>2. Complex API Response Parsing</h3>
-            <p>Twelve Data returns a different JSON structure depending on whether a single symbol or multiple symbols are requested. Our Go implementation uses a <strong>dynamic decoder</strong> to handle both cases without error:</p>
-            <ul>
-                <li><strong>Multi-Symbol</strong>: Parses a nested map of quote objects.</li>
-                <li><strong>Format Cleaning</strong>: Automates comma removal from string values (e.g., "$1,234.50" &rarr; 1234.50) to ensure mathematical precision in portfolio profit/loss calculations.</li>
-                <li><strong>Error Isolation</strong>: One failed symbol in a batch does not prevent the update of the other 9 symbols.</li>
-            </ul>
-        </section>
+<span class="keyword">await</span> Purchases.configure(configuration!);</pre>
 
-        <!-- AI RISK SECTION -->
-        <section id="ai-risk">
-            <h2>AI-Powered Risk Analysis (Gemini Pro)</h2>
-            <p>FundPilot doesn't just show numbers; it interprets them. We pass structured portfolio distributions to Google's Gemini Pro via the Go SDK.</p>
-            
-            <h3>Structured Prompting</h3>
-            <p>We feed the AI three specific data points for every analysis:</p>
-            <ol>
-                <li><strong>Asset Mix</strong>: The percentage breakdown of Stock, Crypto, and Manual assets.</li>
-                <li><strong>Profit/Loss Delta</strong>: Real-time absolute and percentage performance.</li>
-                <li><strong>Risk Indicators</strong>: Standard deviation and Sharpe ratio (calculated locally in the Risk module).</li>
-            </ol>
+        <h3>2. Fetching Offerings</h3>
+        <p>
+          Available subscription packages are fetched dynamically from
+          RevenueCat through a Riverpod <code>FutureProvider</code>. This means
+          pricing, trial periods, and product names can be changed server-side
+          in the RevenueCat dashboard without shipping a new app version.
+        </p>
+        <pre>
+<span class="keyword">final</span> offeringsProvider = FutureProvider&lt;Offering?&gt;((ref) <span class="keyword">async</span> {
+    <span class="keyword">final</span> result = <span class="keyword">await</span> repository.getOfferings();
+    <span class="keyword">return</span> result.fold((l) => null, (offerings) {
+        <span class="comment">// Priority: current > 'subscriptions' key > first available</span>
+        <span class="keyword">if</span> (offerings.current != null) <span class="keyword">return</span> offerings.current;
+        <span class="keyword">if</span> (offerings.all.containsKey(<span class="string">'subscriptions'</span>))
+            <span class="keyword">return</span> offerings.all[<span class="string">'subscriptions'</span>];
+        <span class="keyword">return</span> offerings.all.values.first;
+    });
+});</pre>
 
-            <h3>Automated Insights</h3>
-            <ul>
-                <li><strong>Loss Alerts</strong>: Triggered immediately on the backend if an asset drops >2%. The AI generates a 2-sentence tactical recommendation (e.g., "Market volatility is affecting $AAPL; consider your long-term position").</li>
-                <li><strong>Narrative Summaries</strong>: Every morning at 9:00 AM, the system summarizes the previous day's movements into a "Daily Wealth Report" narrative.</li>
-            </ul>
-        </section>
+        <h3>3. Purchase Flow</h3>
+        <p>
+          When a user taps "Subscribe", the
+          <code>SubscriptionNotifier</code> handles the entire lifecycle:
+        </p>
+        <ol>
+          <li>
+            Sets a loading state (<code>state = true</code>) to show a spinner
+            on the paywall.
+          </li>
+          <li>
+            Calls <code>Purchases.purchasePackage(package)</code>, which
+            triggers the native App Store / Play Store sheet.
+          </li>
+          <li>
+            On success, checks the
+            <code>customerInfo.entitlements.all['fundpilot_pro']</code>
+            entitlement.
+          </li>
+          <li>
+            If the entitlement is active, immediately updates the global
+            <code>authProvider</code> to reflect premium status across the
+            entire app UI.
+          </li>
+        </ol>
+        <pre>
+<span class="comment">// SubscriptionDatasource.purchasePackage()</span>
+<span class="keyword">final</span> result = <span class="keyword">await</span> Purchases.purchasePackage(package);
+<span class="keyword">return</span> result.customerInfo.entitlements
+    .all[RevenueCatConfig.entitlementId]?.isActive ?? false;</pre>
 
-        <footer>
-            <p>&copy; 2026 FundPilot Documentation. Detailed Technical Specifications.</p>
-        </footer>
+        <h3>4. Backend Synchronization</h3>
+        <p>
+          The mobile app is the source of truth for "did the user pay?", but the
+          Go backend needs to know the premium status for background jobs (AI
+          summaries, loss alerts). Here's how we keep them in sync:
+        </p>
+        <ul>
+          <li>
+            <strong>Primary Sync</strong>: After a successful purchase, the app
+            calls <code>POST /api/subscriptions/sync</code> with
+            <code>{ "is_premium": true }</code>.
+          </li>
+          <li>
+            <strong>GORM Update</strong>: The backend sets
+            <code>is_premium = true</code> on the <code>users</code> table. This
+            flag is indexed for fast lookups by the background tickers.
+          </li>
+          <li>
+            <strong>Retry Queue</strong>: If the sync call fails (e.g., network
+            error), the datasource saves a
+            <code>subscription_pending_sync</code> flag in
+            <code>SharedPreferences</code>. On the next app launch,
+            <code>retryPendingSync()</code> re-attempts the call.
+          </li>
+          <li>
+            <strong>Restore Purchases</strong>: The
+            <code>restorePurchases()</code> flow re-checks RevenueCat's
+            <code>CustomerInfo</code> and re-syncs to the backend, handling
+            device transfers and reinstalls.
+          </li>
+        </ul>
+        <pre>
+<span class="comment">// Backend sync with offline retry</span>
+Future&lt;<span class="keyword">void</span>&gt; syncPremiumStatus(<span class="keyword">bool</span> isPremium) <span class="keyword">async</span> {
+    <span class="keyword">try</span> {
+        <span class="keyword">await</span> _apiClient.dio.post(
+            ApiEndpoints.subscriptionSync,
+            data: {<span class="string">'is_premium'</span>: isPremium},
+        );
+        <span class="keyword">await</span> _clearPendingSync(); <span class="comment">// Success → clear retry flag</span>
+    } <span class="keyword">on</span> DioException {
+        <span class="keyword">await</span> _setPendingSync(isPremium); <span class="comment">// Fail → queue for retry</span>
+    }
+}</pre>
+
+        <h3>5. Premium Gating</h3>
+        <p>
+          On the backend, the <code>is_premium</code> flag gates access to
+          expensive operations. The daily summary generator and loss alert
+          checker both filter users with
+          <code>WHERE is_premium = true</code> before executing any AI or
+          notification logic. On the frontend, non-premium users see a paywall
+          overlay on the Notifications and Risk Insights screens.
+        </p>
+      </section>
+
+      <!-- 7. FCM -->
+      <section id="notifications">
+        <h2>Push Notifications (Firebase Cloud Messaging)</h2>
+        <p>
+          Push notifications are implemented end-to-end, from device
+          registration on the client to targeted delivery from the Go backend.
+        </p>
+
+        <h3>Device Registration (Flutter)</h3>
+        <p>
+          The <code>PushNotificationService</code> is initialized reactively —
+          it watches the <code>authProvider</code> and only registers a device
+          when the user is authenticated. It requests permissions (critical for
+          iOS), listens for token refreshes, and sends the FCM token to the
+          backend:
+        </p>
+        <pre>
+<span class="comment">// POST /api/notifications/devices</span>
+<span class="keyword">await</span> repository.registerDevice(token, platform);
+<span class="comment">// platform = 'android' | 'ios'</span></pre>
+
+        <h3>Backend Delivery (Go + Firebase Admin SDK)</h3>
+        <p>
+          The <code>SendPushNotification()</code> function queries all
+          <code>Device</code> records for a given user and sends a
+          <code>messaging.Message</code> to each one. Invalid tokens are logged
+          for potential cleanup.
+        </p>
+
+        <h3>Foreground vs. Background</h3>
+        <ul>
+          <li>
+            <strong>Background/Terminated</strong>: FCM automatically shows a
+            system tray notification. Tapping it opens the app.
+          </li>
+          <li>
+            <strong>Foreground</strong>: The <code>onMessage</code> listener
+            triggers a Riverpod provider refresh, updating the in-app
+            notification list in real-time without showing a banner.
+          </li>
+        </ul>
+      </section>
+
+      <!-- 8. AI -->
+      <section id="ai">
+        <h2>AI Risk Engine (Gemini Pro)</h2>
+        <p>
+          FundPilot uses the Gemini Pro API through Google's Go SDK for two
+          distinct AI features.
+        </p>
+
+        <h3>Real-Time Loss Alerts</h3>
+        <p>
+          When the 1-hour ticker detects an asset with a &gt;2% loss, it
+          generates a contextual notification. The AI receives the asset name,
+          loss percentage, and asset type, and returns a 2-sentence tactical
+          recommendation. Cooldown logic prevents alert fatigue:
+        </p>
+        <ul>
+          <li>
+            <strong>Market assets</strong> (stocks, crypto, forex): 1-hour
+            cooldown between alerts.
+          </li>
+          <li>
+            <strong>Manual assets</strong> (real estate, custom): 24-hour
+            cooldown.
+          </li>
+        </ul>
+
+        <h3>Daily Wealth Report (9:00 AM)</h3>
+        <p>
+          Every morning, the system calculates each premium user's total
+          portfolio value, daily change, top gainer, top loser, and any manual
+          assets in significant loss. These stats are passed to Gemini which
+          generates a natural-language narrative. The system includes an
+          <strong>idempotency check</strong> — it queries the notifications
+          table to ensure only one "📅 Daily Wealth Report" is ever created per
+          user per day, even if the server restarts multiple times.
+        </p>
+      </section>
+
+      <footer>
+        <p>&copy; 2026 FundPilot. All Rights Reserved.</p>
+      </footer>
     </div>
-</body>
+  </body>
 </html>
