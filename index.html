@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FundPilot | Technical Documentation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary: #0b1c2d;
+        --primary-light: #1a3a5c;
+        --accent: #1dbf73;
+        --accent-dark: #17995c;
+        --background: #f5f7fa;
+        --surface: #ffffff;
+        --text-primary: #111827;
+        --text-secondary: #6b7280;
+        --divider: #e5e7eb;
+        --shadow:
+          0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --primary: #58a6ff;
+          --primary-light: #161b22;
+          --accent: #1dbf73;
+          --background: #0d1117;
+          --surface: #161b22;
+          --text-primary: #f0f6fc;
+          --text-secondary: #8b949e;
+          --divider: #30363d;
+        }
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family:
+          "Inter",
+          -apple-system,
+          BlinkMacSystemFont,
+          sans-serif;
+        line-height: 1.6;
+        color: var(--text-primary);
+        background-color: var(--background);
+        padding: 0;
+      }
+
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 40px 20px;
+      }
+
+      header {
+        text-align: center;
+        margin-bottom: 60px;
+        padding-bottom: 40px;
+        border-bottom: 1px solid var(--divider);
+      }
+
+      .logo {
+        width: 72px;
+        height: 72px;
+        background-color: #0b1c2d;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 24px;
+        color: #ffffff;
+        box-shadow: var(--shadow);
+      }
+
+      .logo svg {
+        width: 40px;
+        height: 40px;
+      }
+
+      h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 12px;
+        letter-spacing: -0.025em;
+      }
+
+      p.subtitle {
+        font-size: 1.15rem;
+        color: var(--text-secondary);
+        font-weight: 400;
+      }
+
+      section {
+        background: var(--surface);
+        padding: 48px;
+        border-radius: 24px;
+        margin-bottom: 32px;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--divider);
+      }
+
+      h2 {
+        font-size: 1.6rem;
+        font-weight: 700;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--text-primary);
+      }
+
+      h2::before {
+        content: "";
+        display: block;
+        width: 4px;
+        height: 28px;
+        background: var(--accent);
+        border-radius: 2px;
+      }
+
+      h3 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin: 32px 0 16px;
+        color: var(--text-primary);
+      }
+
+      p {
+        margin-bottom: 18px;
+        color: var(--text-secondary);
+        font-size: 1rem;
+      }
+
+      ul {
+        margin-bottom: 24px;
+        padding-left: 24px;
+        color: var(--text-secondary);
+      }
+
+      li {
+        margin-bottom: 12px;
+      }
+
+      code {
+        font-family:
+          "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        background: rgba(29, 191, 115, 0.1);
+        color: var(--accent-dark);
+        padding: 2px 6px;
+        border-radius: 6px;
+        font-size: 0.9em;
+        font-weight: 500;
+      }
+
+      .tech-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 24px;
+        margin-top: 32px;
+      }
+
+      .tech-card {
+        padding: 28px;
+        background: var(--background);
+        border-radius: 20px;
+        border: 1px solid var(--divider);
+        transition: transform 0.2s ease;
+      }
+
+      .tech-card:hover {
+        transform: translateY(-4px);
+      }
+
+      .tech-card h4 {
+        margin-bottom: 12px;
+        color: var(--text-primary);
+        font-size: 1.1rem;
+        font-weight: 600;
+      }
+
+      .badge {
+        display: inline-block;
+        padding: 6px 14px;
+        border-radius: 30px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        background: var(--accent);
+        color: #ffffff;
+        margin-bottom: 16px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .architecture-flow {
+        margin: 32px 0;
+        padding: 32px;
+        background: #0b1c2d;
+        border-radius: 20px;
+        color: #ffffff;
+        font-size: 0.95rem;
+      }
+
+      .flow-item {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+
+      .flow-item:last-child {
+        margin-bottom: 0;
+      }
+
+      .flow-arrow {
+        color: var(--accent);
+        font-weight: 800;
+        font-size: 1.2rem;
+      }
+
+      footer {
+        text-align: center;
+        padding: 60px 0;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        border-top: 1px solid var(--divider);
+      }
+
+      .rc-highlight {
+        border-left: 4px solid var(--accent);
+        background: rgba(29, 191, 115, 0.05);
+        padding: 24px;
+        border-radius: 0 12px 12px 0;
+        margin: 24px 0;
+      }
+
+      @media (max-width: 600px) {
+        section {
+          padding: 32px 24px;
+        }
+        h1 {
+          font-size: 2.1rem;
+        }
+        .tech-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div class="logo">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+            <polyline points="17 6 23 6 23 12"></polyline>
+          </svg>
+        </div>
+        <h1>Technical Documentation</h1>
+        <p class="subtitle">
+          Exploring the architecture and engineering behind FundPilot's premium
+          investment experience.
+        </p>
+      </header>
+
+      <section id="stack">
+        <h2>The Tech Stack</h2>
+        <p>
+          FundPilot leverage a modern, high-performance stack chosen for its
+          reliability in handling real-time financial data and complex AI
+          calculations.
+        </p>
+
+        <div class="tech-grid">
+          <div class="tech-card">
+            <span class="badge">Frontend</span>
+            <h4>Flutter & Riverpod</h4>
+            <p>
+              A reactive mobile framework coupled with robust state management
+              to ensure a buttery-smooth 60FPS UI.
+            </p>
+          </div>
+          <div class="tech-card">
+            <span class="badge">Backend</span>
+            <h4>Go (Fiber & GORM)</h4>
+            <p>
+              A statically typed, high-concurrency backend optimized for
+              low-latency API response times.
+            </p>
+          </div>
+          <div class="tech-card">
+            <span class="badge">Database</span>
+            <h4>PostgreSQL</h4>
+            <p>
+              The source of truth for all user portfolio data, utilizing GORM
+              for clean and maintainable object-relational mapping.
+            </p>
+          </div>
+          <div class="tech-card">
+            <span class="badge">Intelligence</span>
+            <h4>Gemini Pro API</h4>
+            <p>
+              The "brain" of FundPilot, providing contextual AI narratives and
+              risk analysis for premium users.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section id="architecture">
+        <h2>Architecture Overview</h2>
+        <p>
+          We've adopted a <strong>Modular Monolith</strong> approach for the
+          backend. This provides the development speed of a monolith while
+          keeping the system organized for future microservice extraction if
+          needed.
+        </p>
+
+        <h3>High-Level Data Flow</h3>
+        <p>
+          Data orchestration is handled by specialized collectors that feed our
+          central portfolio engine.
+        </p>
+
+        <div class="architecture-flow">
+          <div class="flow-item">
+            <span>Market APIs (Twelve Data)</span>
+            <span class="flow-arrow">&rarr;</span>
+            <span>Background Price Updater</span>
+          </div>
+          <div class="flow-item">
+            <span>Updater Engine</span> <span class="flow-arrow">&rarr;</span>
+            <span>PostgreSQL (Live Price Cache)</span>
+          </div>
+          <div class="flow-item">
+            <span>Gemini AI Engine</span> <span class="flow-arrow">&larr;</span>
+            <span>Risk Portfolio Handler</span>
+          </div>
+          <div class="flow-item">
+            <span>Firebase Messaging</span>
+            <span class="flow-arrow">&rarr;</span>
+            <span>Mobile Client Push</span>
+          </div>
+        </div>
+
+        <h3>Real-time Reliability</h3>
+        <ul>
+          <li>
+            <strong>30s Ticker</strong>: A dedicated Go routine refreshes stock
+            and crypto quotes in batches to stay within API rate limits while
+            keeping the UI fresh.
+          </li>
+          <li>
+            <strong>Idempotent Summaries</strong>: The daily 9:00 AM summary
+            system checks for past completion, ensuring a server reboot never
+            leads to a missed or double report.
+          </li>
+          <li>
+            <strong>Modular Isolation</strong>: The <code>marketdata</code>,
+            <code>risk</code>, and <code>notifications</code> packages operate
+            independently but share a common <code>database</code> layer.
+          </li>
+        </ul>
+      </section>
+
+      <section id="revenuecat">
+        <h2>RevenueCat & Subscription Logic</h2>
+        <p>
+          FundPilot's premium tier is powered by <strong>RevenueCat</strong>,
+          providing a seamless bridge between Apple's App Store, Google Play,
+          and our backend.
+        </p>
+
+        <div class="rc-highlight">
+          <p>
+            <strong>The Challenge:</strong> Ensuring local features (like UI
+            gauges) and backend features (like 9 AM AI summaries) both stay
+            perfectly in sync with the user's current subscription state.
+          </p>
+        </div>
+
+        <h3>Mobile Integration</h3>
+        <p>
+          The Flutter client uses the <code>purchases_flutter</code> plugin. We
+          fetch <code>Offerings</code> dynamically to allow for server-side
+          experiments with pricing plans without requiring an app store update.
+          The <code>isPremium</code> state is a global Riverpod provider that
+          listens to changes from RevenueCat in real-time.
+        </p>
+
+        <h3>Backend Entitlement Sync</h3>
+        <p>
+          Our Go backend maintains its own <code>is_premium</code> cache for
+          performance and offline availability. When a user purchases a
+          subscription:
+        </p>
+        <ol>
+          <li>
+            The Flutter client receives the receipt and confirms it with
+            RevenueCat.
+          </li>
+          <li>
+            The app immediately calls our
+            <code>/api/subscriptions/sync</code> endpoint.
+          </li>
+          <li>
+            The backend verifies the entitlement status directly and updates the
+            local user record.
+          </li>
+          <li>
+            Background tasks (like the Daily Summary) check this database flag
+            before generating AI content.
+          </li>
+        </ol>
+      </section>
+
+      <footer>
+        <p>
+          &copy; 2026 FundPilot Project. Branded with the PilotFund identity
+          system.
+        </p>
+      </footer>
+    </div>
+  </body>
+</html>
