@@ -306,7 +306,7 @@
         <p class="subtitle">
           A comprehensive look at every layer of FundPilot — from the Flutter UI
           and state management, through the Go backend and database, to the
-          RevenueCat subscription engine and Twelve Data market integration.
+          RevenueCat subscription engine and Finnhub market integration.
         </p>
         <nav class="toc">
           <a href="#overview">Overview</a>
@@ -537,7 +537,7 @@ backend/
         ├── assets/          <span class="comment">// CRUD for user portfolio assets</span>
         ├── portfolio/       <span class="comment">// Aggregated portfolio calculations</span>
         ├── analytics/       <span class="comment">// Allocation breakdown, performance metrics</span>
-        ├── marketdata/      <span class="comment">// PriceUpdater, Twelve Data batching, search/quote</span>
+        ├── marketdata/      <span class="comment">// PriceUpdater, Finnhub integration, search/quote</span>
         ├── notifications/   <span class="comment">// Notification CRUD, FCM push delivery</span>
         ├── subscription/    <span class="comment">// Premium status sync endpoint</span>
         ├── risk/            <span class="comment">// Gemini AI integration, risk analysis handler</span>
@@ -676,7 +676,7 @@ t := daysHeld / 365.0
 currentValue := asset.PurchasePrice * math.Pow(1 + (rate/n), n*t)</pre>
       </section>
 
-      <!-- 5. TWELVE DATA -->
+      <!-- 5. FINNHUB -->
       <section id="finnhub">
         <h2>Finnhub API Integration</h2>
         <p>
