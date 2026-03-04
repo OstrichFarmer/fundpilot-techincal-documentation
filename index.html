@@ -313,7 +313,7 @@
           <a href="#frontend">Frontend</a>
           <a href="#backend">Backend</a>
           <a href="#database">Database</a>
-          <a href="#twelvedata">Twelve Data</a>
+          <a href="#finnhub">Finnhub API</a>
           <a href="#revenuecat">RevenueCat</a>
           <a href="#notifications">Push Notifications</a>
           <a href="#ai">AI Engine</a>
@@ -370,11 +370,11 @@
           </div>
           <div class="card">
             <span class="badge">Market Data</span>
-            <h4>Twelve Data API</h4>
+            <h4>Finnhub API</h4>
             <p>
               Real-time and historical pricing for stocks, cryptocurrencies, and
-              forex pairs. Integrated through a custom batching engine that
-              respects the Grow Plan's 55-credit/minute rate limit.
+              forex pairs. Integrated through a robust fetching engine with
+              multi-layered fallbacks for restricted assets like Gold (XAU).
             </p>
           </div>
           <div class="card">
@@ -590,7 +590,7 @@ backend/
         <div class="flow-box">
           <div class="flow-row">
             <span>⏱ Every 15 seconds</span> <span class="arrow">&rarr;</span>
-            <span>Refresh all market prices in batches</span>
+            <span>Refresh all market prices sequentially</span>
           </div>
           <div class="flow-row">
             <span>⏱ Every 1 hour</span> <span class="arrow">&rarr;</span>
@@ -611,7 +611,7 @@ dailyTicker := time.NewTicker(1 * time.Minute)
 <span class="keyword">for</span> {
     <span class="keyword">select</span> {
     <span class="keyword">case</span> &lt;-priceTicker.C:
-        p.updatePrices()       <span class="comment">// Batch fetch from Twelve Data</span>
+        p.updatePrices()       <span class="comment">// Sequential fetch with rate limiting</span>
     <span class="keyword">case</span> &lt;-alertTicker.C:
         p.checkLossAlerts()    <span class="comment">// AI-powered loss notifications</span>
     <span class="keyword">case</span> &lt;-dailyTicker.C:
@@ -677,85 +677,68 @@ currentValue := asset.PurchasePrice * math.Pow(1 + (rate/n), n*t)</pre>
       </section>
 
       <!-- 5. TWELVE DATA -->
-      <section id="twelvedata">
-        <h2>Twelve Data Integration</h2>
+      <section id="finnhub">
+        <h2>Finnhub API Integration</h2>
         <p>
-          Twelve Data provides real-time quotes for stocks, crypto, and forex.
-          The integration is designed around the constraints of the
-          <strong>Grow Plan</strong> (55 API credits per minute), ensuring
-          reliable data without ever hitting a rate limit.
+          Finnhub provides real-time quotes for stocks, currencies, and
+          cryptocurrencies. The integration is optimized for the
+          <strong>Free Tier</strong> (60 API calls per minute), ensuring
+          reliable data delivery through clever sequential processing and
+          aggressive fallbacks.
         </p>
 
-        <h3>Credit Budgeting Strategy</h3>
+        <h3>Rate Limit Management</h3>
         <div class="note">
-          <strong>Budget Allocation:</strong> Of the 55 credits/minute,
-          <strong>40 are reserved for background price updates</strong> and
-          <strong>15 are reserved for user-initiated actions</strong> (asset
-          search, real-time quote on detail screen). This guarantees users never
-          experience a "rate limit" error during normal app usage.
+          <strong>Sequential Fetching:</strong> To strictly adhere to the 60
+          calls/minute limit, the <code>PriceUpdater</code> processes symbols
+          sequentially with a <strong>1-second sleep</strong> between each
+          request. This guarantees we stay within the "1 call per second" safety
+          zone of the free tier.
         </div>
 
-        <h3>Symbol Batching Engine</h3>
+        <h3>The Multi-Layered Fallback Engine</h3>
         <p>
-          Instead of making individual API calls for each symbol, the
-          <code>PriceUpdater</code> collects all unique symbols across the
-          entire database and processes them in batches of 10. Each symbol in a
-          batch consumes 1 credit, so 4 batches per tick = 40 credits.
+          Since certain assets (like Gold/XAU) may be restricted on some
+          endpoints, the backend implements a hierarchical retrieval strategy:
         </p>
-        <pre>
-<span class="comment">// 1. Collect all unique symbols from the assets table</span>
-<span class="keyword">var</span> symbols []string
-database.DB.Model(&database.Asset{}).
-    Where(<span class="string">"symbol IS NOT NULL AND symbol != ''"</span>).
-    Distinct(<span class="string">"symbol"</span>).Pluck(<span class="string">"symbol"</span>, &symbols)
+        <ol>
+          <li>
+            <strong>Standard Quote</strong>: Primary attempt using the
+            <code>/quote</code> endpoint.
+          </li>
+          <li>
+            <strong>Digital Asset Proxy</strong>: Specifically for Gold (XAU),
+            the engine falls back to <code>BINANCE:PAXGUSDT</code> or the
+            <code>GLD</code> ETF if the spot price is restricted.
+          </li>
+          <li>
+            <strong>Candle Logic</strong>: If a quote fails for Forex/Metals, it
+            retrieves 15-minute resolution candles (<code>/forex/candle</code>)
+            to extract the most recent close.
+          </li>
+          <li>
+            <strong>Exchange Rates</strong>: As a final resort, it pulls global
+            Forex rates (<code>/forex/rates</code>) to derivatively calculate
+            the asset's value.
+          </li>
+        </ol>
 
-<span class="comment">// 2. Process in batches of 10</span>
-batchSize := 10
-<span class="keyword">for</span> i := 0; i &lt; len(symbols); i += batchSize {
-    end := i + batchSize
-    <span class="keyword">if</span> end &gt; len(symbols) { end = len(symbols) }
+        <h3>Price Search & Search Logic</h3>
+        <pre>
+<span class="keyword">func</span> (p *PriceUpdater) fetchSinglePrice(symbol string) (*priceData, error) {
+    <span class="comment">// 1. Try standard Quote</span>
+    <span class="keyword">if</span> data, err := p.tryFetchPrice(symbol); err == nil {
+        <span class="keyword">return</span> data, nil
+    }
+
+    <span class="comment">// 2. Fallback for Forex/Metals (Candles)</span>
+    <span class="keyword">if</span> strings.Contains(symbol, <span class="string">":"</span>) || strings.Contains(symbol, <span class="string">"XAU"</span>) {
+        <span class="comment">// Fetch 24h of 15m candles...</span>
+    }
     
-    batch := symbols[i:end]
-    prices, err := p.fetchPricesBatch(batch)
+    <span class="comment">// 3. Last resort (Global Rates)</span>
     <span class="comment">// ...</span>
 }</pre>
-
-        <h3>Response Parsing</h3>
-        <p>
-          Twelve Data returns a different JSON structure for single-symbol vs.
-          multi-symbol requests. Our parser uses a
-          <strong>dynamic decoder</strong> that detects the response shape at
-          runtime:
-        </p>
-        <ul>
-          <li>
-            <strong>Single symbol</strong>: Returns a flat JSON object with
-            price fields.
-          </li>
-          <li>
-            <strong>Multi symbol</strong>: Returns a nested map where each key
-            is a symbol.
-          </li>
-          <li>
-            <strong>Comma handling</strong>: Numeric strings like
-            <code>"1,234.50"</code> are automatically cleaned to
-            <code>1234.50</code> before parsing to <code>float64</code>.
-          </li>
-          <li>
-            <strong>Error isolation</strong>: If one symbol in a batch fails
-            (e.g., delisted), the other 9 symbols are still updated
-            successfully.
-          </li>
-        </ul>
-
-        <h3>Search & Quote Endpoints</h3>
-        <p>
-          User-facing search (<code>/api/market/search?q=AAPL</code>) and quote
-          (<code>/api/market/quote?symbol=AAPL</code>) endpoints hit Twelve Data
-          directly with no batching, consuming 1 credit each. These are
-          rate-limited against the reserved 15-credit budget through natural
-          user interaction patterns.
-        </p>
       </section>
 
       <!-- 6. REVENUECAT -->
